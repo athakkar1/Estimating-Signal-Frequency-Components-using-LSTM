@@ -1,3 +1,4 @@
+
 import keras as keras
 import tensorflow as tf
 from keras import layers
@@ -26,15 +27,15 @@ print(labels.shape)
 # Reshape the features array to have one column for each data point
 # Find the maximum length of the sublists
 # Create a 2D array and pad with zeros
-padded_array = pad_sequences(labels, padding='post', maxlen=5)
+padded_array = pad_sequences(labels, padding='post', maxlen=3)
 print(padded_array.shape)
 # Convert to a true 2D NumPy array
 labels = np.vstack(padded_array)
 features = np.vstack(features)
 
-scaler = MinMaxScaler()
-features = scaler.fit_transform(features)
-labels = scaler.fit_transform(labels)
+#scaler = MinMaxScaler()
+#features = scaler.fit_transform(features)
+#labels = scaler.fit_transform(labels)
 
 # Standardize the features (optional but can be beneficial for some models)
 #scaler = StandardScaler()
@@ -58,26 +59,54 @@ print("y_train_categorical shape:", y_train.shape)
 print("y_test_categorical shape:", y_test.shape)
 
 model = keras.Sequential()
-model.add(layers.LSTM(64, input_shape=(60, 1), return_sequences=True))
+model.add(layers.LSTM(299, input_shape=(299, 1), return_sequences=True))
 model.add(layers.BatchNormalization())  # Batch normalization can be helpful
-model.add(layers.LSTM(24, return_sequences=True))
+model.add(layers.LSTM(128, return_sequences=True))
 model.add(layers.BatchNormalization())
-model.add(layers.LSTM(8, return_sequences=False))
+model.add(layers.LSTM(64, return_sequences=False))
 model.add(layers.BatchNormalization())
 model.add(layers.Flatten())
 # Dense layer with ReLU activation for each time step
-model.add(layers.Dense(64, activation='relu'))
+model.add(layers.Dense(32, activation='tanh'))
 
 # Fully connected output layer with up to 5 nodes (adjust as needed)
-model.add(layers.Dense(5))
-#print(model.summary())
+model.add(layers.Dense(3))
+print(model.summary())
 
 model.compile(optimizer='adam',  # You can choose other optimizers like 'sgd', 'rmsprop', etc.
-              loss='mean_squared_error',  # Adjust the loss based on your problem (categorical_crossentropy for classification)
-              metrics=['mae', 'mse', 'mape'])  # You can add more metrics as needed
+              loss='mean_absolute_error',  # Adjust the loss based on your problem (categorical_crossentropy for classification)
+              metrics=['mae'])  # You can add more metrics as needed
 
-model.fit(X_train_tensor, y_train_tensor, epochs=5, batch_size=32, validation_split=0.2)
+model.fit(X_train_tensor, y_train_tensor, epochs=15, batch_size=256, validation_split=0.2)
 
 test_loss, test_accuracy = model.evaluate(X_test_tensor, y_test_tensor)
 print(f'Test Accuracy: {test_accuracy * 100:.2f}%')
 print(f'Test Loss: {test_loss:.4f}')
+
+csv_file_path = 'samplesreal.csv'  # Replace with the actual path to your CSV file
+df = pd.read_csv(csv_file_path)
+
+# Extract features and labels
+features = df['Feature'].apply(lambda x: np.array([float(val.strip("[]")) for val in x.split(',')])).values
+
+# Convert the string of up to 5 numbers to a NumPy array of floats
+labels = df['Label'].values
+labels = np.vstack(labels)
+features = np.vstack(features)
+
+print(labels.shape)
+print(features.shape)
+
+means = np.mean(features, axis=1, keepdims=True)
+print(means)
+features = features - means
+#change to 50
+features = features * 1
+print("Real Sinusoid Tests:\n")
+for i in range(8):
+  print(labels[i:i+1])
+  print(model.predict(features[i:i+1]))
+print("Synthetic Sinusoid Tests:\n")
+for i in range(100):
+  print(y_test[i:i+1])
+  print(model.predict(X_test[i:i+1]))
