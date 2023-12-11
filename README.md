@@ -1,3 +1,5 @@
 # Estimating-Signal-Frequency-Components-using-LSTM
  
 Accurately extracting frequency components from a given signal is a fundamentally critical issue in the domain of signal processing. In most signal processing applications mathematical techniques like the Fast-Fourier-Transform (FFT) are employed to calculate the discrete Fourier transform (DFT) of a given signal to analyze its frequency components in the frequency domain. These techniques can be computationally expensive and require the dedication of a significant amount of computational resources to meet the requirements of real-time systems. This paper proposes a RNN based network which learns to estimate the frequency components of time domain signals based on deep learning methods. Single and combined periodic signals are generated for training our model, with the addition of uniform and Gauss white noise as well as phase differences to make the model more robust and have greater generalization potential. 
+
+**Run testDataset.py to generate the appropiate dataset for the model, unfortunately the dataset is too big to host on GitHub**
